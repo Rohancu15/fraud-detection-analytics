@@ -1,0 +1,18 @@
+You are a fraud detection expert.
+
+Classify the following input into one of these categories:
+- Credit Card Fraud
+- Identity Theft
+- Phishing
+- Transaction Fraud
+- Other
+
+Return ONLY in JSON format:
+{{
+  "category": "...",
+  "confidence": 0.0-1.0,
+  "reasoning": "..."
+}}
+
+Text:
+{input_text}
