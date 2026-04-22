@@ -41,3 +41,55 @@ Mitigation:
 
 ## Summary
 System secured using validation, auth, and rate limiting.
+
+## Day 2 Security Threat Analysis
+
+### 1. Fake Transaction Flooding
+Attack Vector:
+Attacker sends thousands of fake transactions.
+
+Damage:
+Model confusion, storage overload, slower analytics.
+
+Mitigation:
+Rate limiting, CAPTCHA, request validation.
+
+### 2. Prompt Manipulation
+Attack Vector:
+User sends malicious text to alter AI output.
+
+Damage:
+Wrong fraud reports, unsafe responses.
+
+Mitigation:
+Prompt filters, template prompts, keyword blocking.
+
+### 3. Unauthorized Dashboard Access
+Attack Vector:
+User bypasses login or steals token.
+
+Damage:
+Sensitive analytics exposed.
+
+Mitigation:
+JWT expiry, secure login, RBAC roles.
+
+### 4. File Upload Malware
+Attack Vector:
+Malicious file uploaded as attachment.
+
+Damage:
+Server compromise.
+
+Mitigation:
+File type checks, antivirus scan, size limit.
+
+### 5. Data Leakage in Logs
+Attack Vector:
+Sensitive user data stored in logs.
+
+Damage:
+Privacy breach.
+
+Mitigation:
+Mask logs, avoid PII storage, secure monitoring.
