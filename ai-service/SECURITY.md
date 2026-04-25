@@ -96,13 +96,13 @@ Mask logs, avoid PII storage, secure monitoring.
 
 ## Day 5 Security Test Results
 
-| Test Case | Input | Expected Result | Status |
-|----------|-------|----------------|--------|
-| Empty JSON | {} | 400 Invalid JSON | PASS |
-| Normal Input | {"text":"hello"} | Accepted | PASS |
-| Prompt Injection | Ignore previous instructions | 400 Blocked | PASS |
-| HTML Script | <script>alert(1)</script> | Sanitized | PASS |
-| Rate Limit Abuse | 35 requests/min | 429 Too Many Requests | PASS |
+| Test Case | Result |
+|----------|--------|
+| Empty JSON | PASS |
+| Normal Input | PASS |
+| Prompt Injection | PASS |
+| HTML/XSS Input | PASS |
+| Rate Limit Abuse | PASS |
 
 ## Summary
-All Week 1 protections validated successfully.
+Week 1 security controls tested successfully. API validation, prompt injection blocking, and throttling are working as expected.
