@@ -1,35 +1,18 @@
-<<<<<<< HEAD
-server:
-  port: 8086
-
 spring:
   datasource:
     url: jdbc:h2:mem:testdb
     driver-class-name: org.h2.Driver
     username: sa
-    password: ""
-
-  jpa:
-    database-platform: org.hibernate.dialect.H2Dialect
-    hibernate:
-      ddl-auto: create
-    show-sql: true
-
-  h2:
-    console:
-      enabled: true
-=======
-spring:
-  datasource:
-    url: jdbc:mysql://localhost:3306/fraud_db
-    username: root
-    password: ""
+    password:
 
   jpa:
     hibernate:
       ddl-auto: update
     show-sql: true
 
+  h2:
+    console:
+      enabled: true
+
 server:
-  port: 8085
->>>>>>> 8b56dea4943e3938c42ad89ae3d6eef791f34fac
+  port: 8080
