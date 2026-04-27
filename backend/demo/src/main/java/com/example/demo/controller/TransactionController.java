@@ -2,7 +2,6 @@ package com.example.demo.controller;
 
 import com.example.demo.model.Transaction;
 import com.example.demo.service.TransactionService;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,17 +12,20 @@ import java.util.List;
 public class TransactionController {
 
     @Autowired
-    private TransactionService service;
+    private TransactionService transactionService;
 
-    // ✅ GET all transactions
     @GetMapping
-    public List<Transaction> getAll() {
-        return service.getAllTransactions();
+    public List<Transaction> getAllTransactions() {
+        return transactionService.getAllTransactions();
     }
 
-    // ✅ POST create transaction
     @PostMapping
-    public Transaction create(@RequestBody Transaction txn) {
-        return service.processTransaction(txn);
+    public Transaction saveTransaction(@RequestBody Transaction t) {
+        return transactionService.saveTransaction(t);
+    }
+
+    @DeleteMapping("/{id}")
+    public void deleteTransaction(@PathVariable Long id) {
+        transactionService.deleteTransaction(id);
     }
 }

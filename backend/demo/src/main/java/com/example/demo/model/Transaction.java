@@ -12,13 +12,23 @@ public class Transaction {
     private double amount;
     private boolean flagged;
 
-    public Long getId() { return id; }
+    public Long getId() {
+        return id;
+    }
 
-    public double getAmount() { return amount; }
+    public double getAmount() {
+        return amount;
+    }
 
-    public void setAmount(double amount) { this.amount = amount; }
+    public void setAmount(double amount) {
+        this.amount = amount;
+    }
 
-    public boolean isFlagged() { return flagged; }
+    public boolean isFlagged() {
+        return flagged;
+    }
 
-    public void setFlagged(boolean flagged) { this.flagged = flagged; }
+    public void setFlagged(boolean flagged) {
+        this.flagged = flagged;
+    }
 }
