@@ -1,13 +1,12 @@
 from flask import Blueprint, request, jsonify
-from services.groq_client import GroqClient
 import json
 import re
 
+from services.shared import groq_client as client  # ✅ FIX
+
 categorise_bp = Blueprint("categorise", __name__)
-client = GroqClient()
 
 
-# ✅ Load prompt from file
 def load_prompt():
     with open("prompts/categorise_prompt.txt", "r") as file:
         return file.read()
@@ -18,20 +17,16 @@ def categorise():
     try:
         data = request.get_json()
 
-        # ✅ Input validation
         if not data or "text" not in data:
             return jsonify({"error": "Missing 'text' field"}), 400
 
         input_text = data["text"]
 
-        # ✅ Prepare prompt
         prompt_template = load_prompt()
         prompt = prompt_template.format(input_text=input_text)
 
-        # ✅ Call Groq
         response = client.generate(prompt)
 
-        # ✅ Extract JSON safely
         try:
             json_match = re.search(r'\{[\s\S]*?\}', response)
 
