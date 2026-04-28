@@ -2,8 +2,10 @@ from flask import Blueprint, request, jsonify
 import json
 import re
 import time
+import hashlib
 
 from services.shared import groq_client as client
+from services.shared import cache_client as cache  # ✅ ADD THIS
 
 categorise_bp = Blueprint("categorise", __name__)
 
@@ -11,6 +13,11 @@ categorise_bp = Blueprint("categorise", __name__)
 def load_prompt():
     with open("prompts/categorise_prompt.txt", "r") as file:
         return file.read()
+
+
+# ✅ Cache key generator
+def generate_cache_key(text):
+    return hashlib.sha256(text.encode()).hexdigest()
 
 
 @categorise_bp.route("/categorise", methods=["POST"])
@@ -23,15 +30,22 @@ def categorise():
 
         input_text = data["text"]
 
+        # 🔥 Step 1: Check cache
+        key = generate_cache_key(input_text)
+        cached = cache.get(key)
+
+        if cached:
+            return jsonify(json.loads(cached))
+
+        # 🔥 Step 2: Generate prompt
         prompt_template = load_prompt()
         prompt = prompt_template.format(input_text=input_text)
 
-        # 🔥 Timing start
         start = time.time()
         response = client.generate(prompt)
         end = time.time()
 
-        # 🔥 Extract JSON
+        # 🔥 Step 3: Extract JSON
         try:
             json_match = re.search(r'\{[\s\S]*?\}', response)
 
@@ -42,12 +56,12 @@ def categorise():
 
         except Exception:
             parsed_response = {
-                "category": "Unknown",
+                "category": "Other",
                 "confidence": 0.0,
                 "reasoning": response
             }
 
-        return jsonify({
+        result = {
             "data": parsed_response,
             "meta": {
                 "confidence": parsed_response.get("confidence", 0.0),
@@ -56,7 +70,12 @@ def categorise():
                 "response_time_ms": int((end - start) * 1000),
                 "cached": False
             }
-        }), 200
+        }
+
+        # 🔥 Step 4: Store in cache (15 min TTL handled inside client)
+        cache.set(key, json.dumps(result))
+
+        return jsonify(result), 200
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
