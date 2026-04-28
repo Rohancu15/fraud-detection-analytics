@@ -19,6 +19,24 @@ def generate_cache_key(question):
     return hashlib.sha256(question.encode()).hexdigest()
 
 
+# ✅ Fallback response
+def fallback_response():
+    return {
+        "data": {
+            "answer": "Unable to process the request at the moment. Please try again later.",
+            "sources": []
+        },
+        "meta": {
+            "confidence": 0.0,
+            "model_used": groq.model,
+            "tokens_used": 0,
+            "response_time_ms": 0,
+            "cached": False,
+            "is_fallback": True
+        }
+    }
+
+
 @query_bp.route("/query", methods=["POST"])
 def query():
     try:
@@ -28,28 +46,34 @@ def query():
             return jsonify({"error": "Missing 'question'"}), 400
 
         question = data["question"]
-
         key = generate_cache_key(question)
 
-        # 🔥 Check cache
+        # 🔥 Step 1: Cache check
         cached = cache.get(key)
         if cached:
             cached_data = json.loads(cached)
             cached_data["meta"]["cached"] = True
             return jsonify(cached_data)
 
-        # 🔥 RAG pipeline
+        # 🔥 Step 2: RAG
         docs = chroma.query(question)
         sources = docs[0] if docs else []
 
         context = "\n".join([f"- {doc}" for doc in sources])
 
-        prompt_template = load_prompt()
-        prompt = prompt_template.format(context=context, question=question)
+        prompt = load_prompt().format(context=context, question=question)
 
-        # 🔥 Timing
+        # 🔥 Step 3: AI call with fallback
         start = time.time()
-        answer = groq.generate(prompt)
+
+        try:
+            answer = groq.generate(prompt)
+            if not answer:
+                raise ValueError("Empty response")
+
+        except Exception:
+            return jsonify(fallback_response())
+
         end = time.time()
 
         response_time = int((end - start) * 1000)
@@ -64,14 +88,15 @@ def query():
                 "model_used": groq.model,
                 "tokens_used": len(prompt.split()),
                 "response_time_ms": response_time,
-                "cached": False
+                "cached": False,
+                "is_fallback": False
             }
         }
 
-        # 🔥 Store in cache
+        # 🔥 Step 4: Cache store
         cache.set(key, json.dumps(response))
 
         return jsonify(response)
 
     except Exception:
-        return jsonify({"error": "Internal server error"}), 500
+        return jsonify(fallback_response())  # ultimate safety

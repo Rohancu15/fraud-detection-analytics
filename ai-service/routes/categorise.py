@@ -5,7 +5,7 @@ import time
 import hashlib
 
 from services.shared import groq_client as client
-from services.shared import cache_client as cache  # ✅ ADD THIS
+from services.shared import cache_client as cache
 
 categorise_bp = Blueprint("categorise", __name__)
 
@@ -15,9 +15,25 @@ def load_prompt():
         return file.read()
 
 
-# ✅ Cache key generator
 def generate_cache_key(text):
     return hashlib.sha256(text.encode()).hexdigest()
+
+
+# ✅ Fallback response
+def fallback_response(text):
+    return {
+        "data": {
+            "category": "Other",
+            "confidence": 0.5,
+            "reasoning": "Fallback triggered due to AI service failure"
+        },
+        "meta": {
+            "model_used": client.model,
+            "response_time_ms": 0,
+            "cached": False,
+            "is_fallback": True
+        }
+    }
 
 
 @categorise_bp.route("/categorise", methods=["POST"])
@@ -30,52 +46,49 @@ def categorise():
 
         input_text = data["text"]
 
-        # 🔥 Step 1: Check cache
+        # 🔥 Cache check
         key = generate_cache_key(input_text)
         cached = cache.get(key)
-
         if cached:
             return jsonify(json.loads(cached))
 
-        # 🔥 Step 2: Generate prompt
-        prompt_template = load_prompt()
-        prompt = prompt_template.format(input_text=input_text)
+        prompt = load_prompt().format(input_text=input_text)
 
         start = time.time()
-        response = client.generate(prompt)
-        end = time.time()
 
-        # 🔥 Step 3: Extract JSON
         try:
-            json_match = re.search(r'\{[\s\S]*?\}', response)
-
-            if json_match:
-                parsed_response = json.loads(json_match.group())
-            else:
-                raise ValueError("No JSON found")
+            response = client.generate(prompt)  # 🔥 AI call
 
         except Exception:
-            parsed_response = {
-                "category": "Other",
-                "confidence": 0.0,
-                "reasoning": response
-            }
+            return jsonify(fallback_response(input_text))  # ✅ fallback
+
+        end = time.time()
+
+        # 🔥 Parse JSON
+        try:
+            json_match = re.search(r'\{[\s\S]*?\}', response)
+            parsed = json.loads(json_match.group()) if json_match else None
+            if not parsed:
+                raise ValueError()
+
+        except Exception:
+            return jsonify(fallback_response(input_text))  # ✅ fallback
 
         result = {
-            "data": parsed_response,
+            "data": parsed,
             "meta": {
-                "confidence": parsed_response.get("confidence", 0.0),
+                "confidence": parsed.get("confidence", 0.0),
                 "model_used": client.model,
                 "tokens_used": len(prompt.split()),
                 "response_time_ms": int((end - start) * 1000),
-                "cached": False
+                "cached": False,
+                "is_fallback": False
             }
         }
 
-        # 🔥 Step 4: Store in cache (15 min TTL handled inside client)
         cache.set(key, json.dumps(result))
 
-        return jsonify(result), 200
+        return jsonify(result)
 
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+    except Exception:
+        return jsonify(fallback_response(""))  # ultimate safety
