@@ -1,35 +1,22 @@
-from flask import Flask, jsonify
-from flask_cors import CORS
-import logging
+from flask import Flask
 
-# 🔹 Import blueprint
-from routes.describe import describe_bp
+from routes.categorise import categorise_bp
+from routes.query import query_bp
+from routes.health import health_bp
+from services.data_loader import load_data_to_chroma
+from routes.report import report_bp
+
 
 app = Flask(__name__)
-CORS(app)
-# 🔹 Register blueprint
-app.register_blueprint(describe_bp)
 
-# 🔹 Logging setup
-logging.basicConfig(level=logging.INFO)
+# ✅ Load dataset
+load_data_to_chroma()
 
-
-
-# 🔹 Health Check Endpoint
-@app.route("/health", methods=["GET"])
-def health():
-    return jsonify({"status": "ok"}), 200
-
-
-# 🔹 Global Error Handler
-
-@app.errorhandler(Exception)
-def handle_exception(e):
-    logging.error(f"Unhandled Exception: {str(e)}")
-    return jsonify({
-        "status": "error",
-        "message": "Internal server error"
-    }), 500
+# ✅ Register routes
+app.register_blueprint(categorise_bp)
+app.register_blueprint(query_bp)
+app.register_blueprint(health_bp)
+app.register_blueprint(report_bp)
 
 if __name__ == "__main__":
     app.run(debug=True)

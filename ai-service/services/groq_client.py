@@ -1,42 +1,53 @@
-from groq import Groq
 import os
+import time
+from groq import Groq
 from dotenv import load_dotenv
 
 load_dotenv()
 
-client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
+class GroqClient:
+    def __init__(self):
+        self.api_key = os.getenv("GROQ_API_KEY")
+        self.client = Groq(api_key=self.api_key)
+        self.model = "llama-3.3-70b-versatile"
 
-def generate_response(prompt):
-    try:
-        print("Calling Groq...")
+        # ✅ Track response times
+        self.response_times = []
 
-        completion = client.chat.completions.create(
-            model="llama-3.1-8b-instant",
-            messages=[
-                {
-                    "role": "system",
-                    "content": "You are a strict JSON generator. Always return valid JSON only."
-                },
-                {
-                    "role": "user",
-                    "content": prompt
-                }
-            ],
-            temperature=0.3,   # 🔹 more consistent output
-            max_tokens=500
-        )
+    def generate(self, prompt, temperature=0.5, max_retries=3):
+        for attempt in range(max_retries):
+            try:
+                start_time = time.time()  # ⏱️ start
 
-        response = completion.choices[0].message.content
+                response = self.client.chat.completions.create(
+                    model=self.model,
+                    messages=[
+                        {"role": "user", "content": prompt}
+                    ],
+                    temperature=temperature
+                )
 
-        print("Groq response received")
+                end_time = time.time()  # ⏱️ end
+                duration = (end_time - start_time) * 1000  # ms
 
-        # 🔹 Basic validation
-        if not response:
-            raise ValueError("Empty response from Groq")
+                # ✅ Store response time
+                self.response_times.append(duration)
 
-        return response
+                # Keep only last 10 values
+                if len(self.response_times) > 10:
+                    self.response_times.pop(0)
 
-    except Exception as e:
-        print("Groq Error:", e)
-        return '{"risk_level": "Unknown", "explanation": "Error generating response", "key_indicators": []}'
+                return response.choices[0].message.content
+
+            except Exception:
+                if attempt == max_retries - 1:
+                    return "Error: Unable to generate response"
+
+                time.sleep(2)  # retry delay
+
+    # ✅ Get average response time
+    def get_avg_response_time(self):
+        if not self.response_times:
+            return 0
+        return sum(self.response_times) / len(self.response_times)
