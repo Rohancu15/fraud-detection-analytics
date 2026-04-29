@@ -9,28 +9,26 @@ public class Transaction {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Double amount;
-    private String description;
-
-    // Getters and Setters
+    private double amount;
+    private boolean flagged;
 
     public Long getId() {
         return id;
     }
 
-    public Double getAmount() {
+    public double getAmount() {
         return amount;
     }
 
-    public void setAmount(Double amount) {
+    public void setAmount(double amount) {
         this.amount = amount;
     }
 
-    public String getDescription() {
-        return description;
+    public boolean isFlagged() {
+        return flagged;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
+    public void setFlagged(boolean flagged) {
+        this.flagged = flagged;
     }
 }

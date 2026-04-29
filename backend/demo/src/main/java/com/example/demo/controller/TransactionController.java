@@ -8,40 +8,41 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/transactions")
+@RequestMapping("/transactions")
 public class TransactionController {
 
     @Autowired
     private TransactionService transactionService;
 
-    // ✅ Create Transaction
-    @PostMapping
-    public Transaction createTransaction(@RequestBody Transaction transaction) {
-        return transactionService.saveTransaction(transaction);
-    }
-
-    // ✅ Get All Transactions
+    // ✅ GET ALL
     @GetMapping
     public List<Transaction> getAllTransactions() {
         return transactionService.getAllTransactions();
     }
 
-    // ✅ Get Transaction By ID
+    // ✅ GET BY ID
     @GetMapping("/{id}")
     public Transaction getTransactionById(@PathVariable Long id) {
         return transactionService.getTransactionById(id);
     }
 
-    // ✅ Update Transaction
+    // ✅ CREATE
+    @PostMapping
+    public Transaction createTransaction(@RequestBody Transaction transaction) {
+        return transactionService.createTransaction(transaction);
+    }
+
+    // ✅ UPDATE
     @PutMapping("/{id}")
-    public Transaction updateTransaction(@PathVariable Long id, @RequestBody Transaction transaction) {
+    public Transaction updateTransaction(@PathVariable Long id,
+                                         @RequestBody Transaction transaction) {
         return transactionService.updateTransaction(id, transaction);
     }
 
-    // ✅ Delete Transaction
+    // ✅ DELETE
     @DeleteMapping("/{id}")
     public String deleteTransaction(@PathVariable Long id) {
         transactionService.deleteTransaction(id);
-        return "Transaction deleted successfully!";
+        return "Transaction deleted successfully";
     }
 }
