@@ -1,0 +1,63 @@
+TEST CASE 1
+Input:
+User made 5 transactions in 2 minutes from different countries
+
+Expected Output:
+risk_level: High
+explanation: Rapid transactions across multiple countries indicate potential fraud.
+key_indicators:
+- High transaction frequency
+- Location mismatch
+- Unusual behavior pattern
+
+
+TEST CASE 2
+Input:
+Single transaction from usual location and normal amount
+
+Expected Output:
+risk_level: Low
+explanation: Transaction behavior matches normal user activity.
+key_indicators:
+- Normal frequency
+- Known location
+- Typical transaction amount
+
+
+TEST CASE 3
+Input:
+Large transaction initiated at midnight from unknown device
+
+Expected Output:
+risk_level: High
+explanation: Unusual timing, device, and transaction amount indicate suspicious activity.
+key_indicators:
+- Unrecognized device
+- High transaction value
+- Unusual time
+
+
+TEST CASE 4
+Input:
+Multiple failed login attempts followed by successful transaction
+
+Expected Output:
+risk_level: Medium
+explanation: Repeated failed logins followed by access suggests possible unauthorized attempt.
+key_indicators:
+- Failed login attempts
+- Suspicious access pattern
+- Potential credential misuse
+
+
+TEST CASE 5
+Input:
+Frequent small transactions within a short time span
+
+Expected Output:
+risk_level: Medium
+explanation: Multiple small transactions in a short period may indicate testing behavior.
+key_indicators:
+- High frequency
+- Low transaction values
+- Pattern anomaly
