@@ -1,108 +1,160 @@
-# SECURITY.md
+# SECURITY.md — Fraud Detection Analytics
 
-## Fraud Detection Analytics Security Report
+## 🔐 Overview
 
-### 1. SQL Injection
-Risk: Malicious SQL queries can access database data.
+This document outlines the security measures implemented in the AI service to prevent common vulnerabilities and attacks.
 
-Mitigation:
-- Use prepared statements
-- Use JPA queries
-- Validate input
+---
 
-### 2. Cross Site Scripting (XSS)
-Risk: JavaScript injection in forms.
+## 🚨 1. Input Injection (Prompt Injection / XSS)
 
-Mitigation:
-- Sanitize user input
-- Escape frontend output
+### Attack Example:
 
-### 3. Prompt Injection
-Risk: User manipulates AI prompt.
+User enters:
 
-Mitigation:
-- Filter suspicious text
-- Limit prompt size
-- Use fixed templates
+<script>alert('hack')</script>
 
-### 4. Rate Limiting Abuse
-Risk: Too many requests crash server.
+### Risk:
 
-Mitigation:
-- Use flask-limiter
-- 30 req/min max
+* Malicious scripts execution
+* Prompt manipulation
 
-### 5. Authentication Bypass
-Risk: Unauthorized access.
+### Mitigation:
 
-Mitigation:
-- JWT token required
-- Role based access
+* All inputs are sanitized using `sanitize.py`
+* HTML tags and suspicious patterns are removed
 
-## Summary
-System secured using validation, auth, and rate limiting.
+### Status:
 
-## Day 2 Security Threat Analysis
+✔ Fixed
 
-### 1. Fake Transaction Flooding
-Attack Vector:
-Attacker sends thousands of fake transactions.
+---
 
-Damage:
-Model confusion, storage overload, slower analytics.
+## 🚨 2. Malicious Input (Keyword Attacks)
 
-Mitigation:
-Rate limiting, CAPTCHA, request validation.
+### Attack Example:
 
-### 2. Prompt Manipulation
-Attack Vector:
-User sends malicious text to alter AI output.
+"hacker bypass system"
 
-Damage:
-Wrong fraud reports, unsafe responses.
+### Risk:
 
-Mitigation:
-Prompt filters, template prompts, keyword blocking.
+* AI manipulation
+* Unauthorized actions
 
-### 3. Unauthorized Dashboard Access
-Attack Vector:
-User bypasses login or steals token.
+### Mitigation:
 
-Damage:
-Sensitive analytics exposed.
+* Keywords like "hack", "bypass" are blocked
+* Request is rejected with HTTP 400
 
-Mitigation:
-JWT expiry, secure login, RBAC roles.
+### Status:
 
-### 4. File Upload Malware
-Attack Vector:
-Malicious file uploaded as attachment.
+✔ Fixed
 
-Damage:
-Server compromise.
+---
 
-Mitigation:
-File type checks, antivirus scan, size limit.
+## 🚨 3. Rate Limiting (DoS Protection)
 
-### 5. Data Leakage in Logs
-Attack Vector:
-Sensitive user data stored in logs.
+### Attack Example:
 
-Damage:
-Privacy breach.
+Sending 100+ requests per second
 
-Mitigation:
-Mask logs, avoid PII storage, secure monitoring.
+### Risk:
 
-## Day 5 Security Test Results
+* Server overload
+* API crash
 
-| Test Case | Result |
-|----------|--------|
-| Empty JSON | PASS |
-| Normal Input | PASS |
-| Prompt Injection | PASS |
-| HTML/XSS Input | PASS |
-| Rate Limit Abuse | PASS |
+### Mitigation:
 
-## Summary
-Week 1 security controls tested successfully. API validation, prompt injection blocking, and throttling are working as expected.
+* Flask-Limiter implemented
+* Limits:
+
+  * 30 req/min (default)
+  * 20 req/min (/analyze)
+  * 10 req/min (/generate-report)
+
+### Status:
+
+✔ Fixed
+
+---
+
+## 🚨 4. Invalid JSON Input
+
+### Attack Example:
+
+Sending empty or malformed JSON
+
+### Risk:
+
+* Server crash
+* Unexpected behavior
+
+### Mitigation:
+
+* Validation using:
+  if not data:
+  return error
+
+### Status:
+
+✔ Fixed
+
+---
+
+## 🚨 5. Unauthorized Access
+
+### Attack Example:
+
+Access API without authentication
+
+### Risk:
+
+* Unauthorized usage
+
+### Mitigation:
+
+* (Planned) JWT authentication in backend
+
+### Status:
+
+⚠️ Partially handled
+
+---
+
+## 🔒 Security Headers
+
+Added headers:
+
+* X-Content-Type-Options: nosniff
+* X-Frame-Options: DENY
+
+---
+
+## 🧪 Security Testing
+
+Performed:
+
+* Injection tests ✔
+* Rate limit tests ✔
+* Invalid input tests ✔
+
+---
+
+## 📊 Final Status
+
+All major vulnerabilities are mitigated.
+System is safe for demo usage.
+
+---
+
+
+## 🧪 Security Testing Results
+
+| Test Case        | Input         | Output     | Status |
+| ---------------- | ------------- | ---------- | ------ |
+| Normal Input     | amount=1000   | safe       | PASS   |
+| High Amount      | amount=100000 | suspicious | PASS   |
+| Malicious Text   | "hack system" | blocked    | PASS   |
+| Unusual Location | Brazil        | suspicious | PASS   |
+
+All test cases passed successfully.
