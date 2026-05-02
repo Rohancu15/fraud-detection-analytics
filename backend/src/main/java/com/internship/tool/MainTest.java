@@ -43,6 +43,22 @@ public class MainTest {
         System.out.println("Reason: " + reason);
         System.out.println("Risk Score: " + riskScore + "/100");
 
+        // 🔥 Call report API
+        String reportResponse = client.getReport();
+
+        if (reportResponse != null) {
+            JsonObject reportJson = JsonParser.parseString(reportResponse).getAsJsonObject();
+
+            int total = reportJson.get("total_transactions").getAsInt();
+            int suspicious = reportJson.get("suspicious_transactions").getAsInt();
+
+            System.out.println("\n--- Report Summary ---");
+            System.out.println("Total Transactions: " + total);
+            System.out.println("Suspicious Transactions: " + suspicious);
+        } else {
+            System.out.println("Error fetching report");
+        }
+
         sc.close();
     }
 }

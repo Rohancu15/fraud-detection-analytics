@@ -7,7 +7,8 @@ import java.util.Scanner;
 
 public class AiServiceClient {
 
-   public String sendToAI(int amount, String location, String text) {
+    // 🔹 Analyze API
+    public String sendToAI(int amount, String location, String text) {
         try {
             URL url = new URL("http://127.0.0.1:5000/analyze");
 
@@ -18,13 +19,37 @@ public class AiServiceClient {
             con.setDoOutput(true);
 
             String jsonInput = "{ \"amount\": " + amount +
-                   ", \"location\": \"" + location +
-                   "\", \"text\": \"" + text + "\" }";
+                    ", \"location\": \"" + location +
+                    "\", \"text\": \"" + text + "\" }";
 
             OutputStream os = con.getOutputStream();
             os.write(jsonInput.getBytes());
             os.flush();
             os.close();
+
+            Scanner sc = new Scanner(con.getInputStream());
+            StringBuilder result = new StringBuilder();
+
+            while (sc.hasNext()) {
+                result.append(sc.nextLine());
+            }
+
+            sc.close();
+            return result.toString();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    // 🔹 Report API (FIXED: inside class)
+    public String getReport() {
+        try {
+            URL url = new URL("http://127.0.0.1:5000/generate-report");
+
+            HttpURLConnection con = (HttpURLConnection) url.openConnection();
+            con.setRequestMethod("GET");
 
             Scanner sc = new Scanner(con.getInputStream());
             StringBuilder result = new StringBuilder();
