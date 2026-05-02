@@ -7,18 +7,19 @@ import java.util.Scanner;
 
 public class AiServiceClient {
 
-    public String sendToAI(String text) {
+   public String sendToAI(int amount, String location, String text) {
         try {
-            URL url = new URL("http://127.0.0.1:5000/test");
+            URL url = new URL("http://127.0.0.1:5000/analyze");
 
-            HttpURLConnection con =
-                (HttpURLConnection) url.openConnection();
+            HttpURLConnection con = (HttpURLConnection) url.openConnection();
 
             con.setRequestMethod("POST");
             con.setRequestProperty("Content-Type", "application/json");
             con.setDoOutput(true);
 
-            String jsonInput = "{\"text\":\"" + text + "\"}";
+            String jsonInput = "{ \"amount\": " + amount +
+                   ", \"location\": \"" + location +
+                   "\", \"text\": \"" + text + "\" }";
 
             OutputStream os = con.getOutputStream();
             os.write(jsonInput.getBytes());
@@ -26,7 +27,6 @@ public class AiServiceClient {
             os.close();
 
             Scanner sc = new Scanner(con.getInputStream());
-
             StringBuilder result = new StringBuilder();
 
             while (sc.hasNext()) {
@@ -34,7 +34,6 @@ public class AiServiceClient {
             }
 
             sc.close();
-
             return result.toString();
 
         } catch (Exception e) {
